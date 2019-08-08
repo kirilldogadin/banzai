@@ -21,7 +21,10 @@ repositories {
 }
 
 dependencies {
-	// https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
+    // https://mvnrepository.com/artifact/org.projectlombok/lombok
+	compileOnly 'org.projectlombok:lombok:1.18.8'
+	annotationProcessor 'org.projectlombok:lombok:1.18.8'
+    // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
 	compile group: 'javax.xml.bind', name: 'jaxb-api'
 	// https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-core
 	compile group: 'org.glassfish.jaxb', name: 'jaxb-core', version: '2.3.0.1'

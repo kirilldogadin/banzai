@@ -88,7 +88,6 @@ public class MonitorService {
     }
 
     /***
-     * полная обработка:
      * 1. Взять список файлов из папки
      * 2. замапить файлы в объекты
      * 3. сохранить в репозиторий
@@ -101,11 +100,21 @@ public class MonitorService {
                 .subscribe(entryRepository::save);
     }
 
-    /**
-     * @param inputDir
-     */
-    public void asyncHandleDir2(File inputDir) {
 
+    /**
+     * Полная обработка
+     * 1. Взять список файлов из папки
+     * 2. замапить файлы в объекты
+     * 3. сохранить в репозиторий
+     * 4. переместить в директорию обработанных файлов
+     * 5. в случае не успеха в директорию для не успешно обработанных файлов
+     * @param inputDir директория мониторинга
+     */
+    public void asyncHandleDir2(File inputDir) throws IOException {
+        directoryObserver.getListFilesFromDirAsync(inputDir)
+                .map(fileMapper::fileToPojo)
+
+                .subscribe(entryRepository::save);
     }
 
     //Todo обработать ошибку реактивно

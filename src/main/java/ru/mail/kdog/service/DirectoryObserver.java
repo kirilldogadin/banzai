@@ -1,5 +1,6 @@
 package ru.mail.kdog.service;
 
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -32,6 +33,11 @@ public class DirectoryObserver {
     //в общем нужно асинхронное чтение это точно иначе этот поток увиснет намертво да и весь процесс точно
     public Flux<File> getListFilesFromDirAsync(File file) throws IOException {
         return Flux.fromArray(Objects.requireNonNull(file.listFiles()));
+    }
+
+    @SneakyThrows
+    public Path moveFile(Path from, Path to) {
+       return Files.move(from,to);
     }
 
 

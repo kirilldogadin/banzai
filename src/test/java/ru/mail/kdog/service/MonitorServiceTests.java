@@ -53,7 +53,7 @@ public class MonitorServiceTests extends BaseTest {
     @Test
     public void asyncHandleDirTest() throws IOException {
         monitorService.asyncHandleDir(new File(IN_URI));
-        Assert.assertEquals(true,entryRepository.count() > 0);
+        Assert.assertTrue(entryRepository.count() > 0);
     }
 
 

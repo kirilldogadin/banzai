@@ -27,7 +27,7 @@ public class FileMapperTests extends BaseTest {
 	@Test
 	public void fileToPojo() throws IOException, JAXBException {
 
-		var file = new File(BASE_FILE_URI);
+		var file = new File(FILE1_URI);
 		Entry entry = fileMapper.fileToPojo(file);
 		System.out.println(entry);
 	}
