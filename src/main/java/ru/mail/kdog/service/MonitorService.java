@@ -1,7 +1,10 @@
 package ru.mail.kdog.service;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import ru.mail.kdog.dto.Entry;
 import ru.mail.kdog.mapper.FileMapper;
 import ru.mail.kdog.repository.EntryRepository;
@@ -26,12 +29,12 @@ import java.util.stream.Stream;
 @Service
 public class MonitorService {
 
-    final DirectoryObserver directoryObserver;
+    final FileSystemService fileSystemService;
     final FileMapper fileMapper;
     final EntryRepository entryRepository;
 
-    public MonitorService(DirectoryObserver directoryObserver, FileMapper fileMapper, EntryRepository entryRepository) {
-        this.directoryObserver = directoryObserver;
+    public MonitorService(FileSystemService fileSystemService, FileMapper fileMapper, EntryRepository entryRepository) {
+        this.fileSystemService = fileSystemService;
         this.fileMapper = fileMapper;
         this.entryRepository = entryRepository;
     }
@@ -41,7 +44,7 @@ public class MonitorService {
     //типичная задача читатель писатель
     //TODO да и брать ВСЕ файлы воообще космически дорого, А если память кончится?
     public Stream<Entry> handleAllFiles(Path path) throws IOException {
-        return directoryObserver.getListFilesFromDir(path)
+        return fileSystemService.getListFilesFromDir(path)
                 .map(Path::toFile)
                 .map(this::convert);
     }
@@ -54,17 +57,14 @@ public class MonitorService {
         var future = CompletableFuture.supplyAsync(() ->
         {
             try {
-                return directoryObserver.getListFilesFromDir(path);
+                return fileSystemService.getListFilesFromDir(path);
             } catch (IOException e) {
             }
             return null;
         });
+
         return future.thenApply(pathStream -> pathStream.map(path1 -> {
-            try {
-                return fileMapper.fileToPojoExceptionally(path.toFile());
-            } catch (JAXBException e) {
-            }
-            return null;
+            return fileMapper.fileToPojo(path.toFile());
         }));
 
     }
@@ -80,11 +80,11 @@ public class MonitorService {
     //Todo название
     public Flux<Entry> loadListFiles(File dir) throws IOException {
         //todo разобраться является ли мап асинхронным
-        return directoryObserver.getListFilesFromDirAsync(dir)
+        return fileSystemService.getListFilesFromDirAsync(dir)
                 //TODO вот тут можно разбить обраотку файлов на группы!!
                 //буфферы паузы или что-то подобное, или просто батчаем(по 50-100 штук)
                 //TODO обработка файлов может быть параллельной!!!??? из xml в сущности
-                .map(fileMapper::fileToPojo);
+                .flatMap(file -> fileMapper.fileToDto(file));
     }
 
     /***
@@ -95,35 +95,65 @@ public class MonitorService {
      * @throws IOException
      */
     public void asyncHandleDir(File dir) throws IOException {
-        directoryObserver.getListFilesFromDirAsync(dir)
-                .map(fileMapper::fileToPojo)
+        fileSystemService.getListFilesFromDirAsync(dir)
+                .flatMap(fileMapper::fileToDto)
                 .subscribe(entryRepository::save);
     }
-
 
     /**
      * Полная обработка
      * 1. Взять список файлов из папки
      * 2. замапить файлы в объекты
-     * 3. сохранить в репозиторий
-     * 4. переместить в директорию обработанных файлов
-     * 5. в случае не успеха в директорию для не успешно обработанных файлов
-     * @param inputDir директория мониторинга
+     * 3 в зависимости от того как прошел маппинг
+     * Валидация
+     * 4. сохранить в репозиторий
+     * 5. переместить в директорию обработанных файлов
+     * TODO 4 и 5 можно делать параллельно - как
+     * ИНАЧЕ
+     * 5.B в случае не успеха в директорию для не успешно обработанных файлов
+     * 6. Ошибки перемещание запись в лог (как и все остальные ошибки)
+     *
+     * @param monitorContext конфиг //TODO добавить метод с забитыми как фп
+     * @return
      */
-    public void asyncHandleDir2(File inputDir) throws IOException {
-        directoryObserver.getListFilesFromDirAsync(inputDir)
-                .map(fileMapper::fileToPojo)
-
-                .subscribe(entryRepository::save);
+    //TODO как вариант можно добавить ПОЛЕ успешности обработки - ??
+    //TODO если успешно, то делаем перенос и сохранение, если нет
+    //TODO ВМЕСТО поля проверку на валид - конвертация и есть валидация?
+    //TODO добавить валидацию полей в конвертацию?
+    //TODO самое главное VAVR там паттерн матчинг
+    public void asyncHandleDir(MonitorContext monitorContext) {
+        Flux.just(monitorContext)
+                .flatMap(monitorContext1 -> fileSystemService.getListFilesFromDirAsync(monitorContext.getDirIn()))
+                //можно или тут или к след методу добавить обработку ошибки файловой системы
+                .onBackpressureBuffer() //TODO проверить с ним и без ОСНОВНАЯ фича вместое самописной очереди
+                .map(file -> fileMapper.fileToDto(file)
+                        //TODo здесь должен быть моно, оператор doOnEach не имеет смысла т.к. последователность всегда из одного элемента состоит и вся цепочка вернет 1 элемент
+                        .doOnEach(signal -> fileSystemService.moveFile(file,
+                                monitorContext.dirOutSuccess))
+                        //Todo тут надо вовзращать Empry в случае ошибки
+                        .onErrorResume(throwable -> {
+                            //Todo добавить условие для ошибки, если это ошибкавалидация то тогда перемещаем файл, если это ошибка файлового сервиса, то другое
+                            fileSystemService.moveFile(file, monitorContext.dirOutWrong);//вовзращает flux/Mono который в случае ошибки делает перемещение файла
+                            return Mono.empty();
+                        }))
+                .subscribe(entryMono -> entryMono.subscribe(entryRepository::save));
     }
 
-    //Todo обработать ошибку реактивно
+    //Todo обработать ошибку реактивно или null вернуть?
     private Entry convert(File file) {
-        try {
-            return fileMapper.fileToPojoExceptionally(file);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return fileMapper.fileToPojo(file);
+    }
+
+    /**
+     * объект содержащий настройки
+     * директория мониторинга
+     * директироия обработыннх и тд
+     */
+    @AllArgsConstructor
+    @Getter
+    public static class MonitorContext {
+        File dirIn;
+        File dirOutSuccess;
+        File dirOutWrong;
     }
 }

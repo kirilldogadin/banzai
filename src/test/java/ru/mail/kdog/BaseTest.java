@@ -11,8 +11,8 @@ public class BaseTest {
     public final String FILE2_NAME = "\\Entry2.xml";
     public final String IN_URI = BASE_PATH_URI + "in";
 
-    public final String OUT_SUCCESS_URI = BASE_PATH_URI + "out\\success";
-    public final String OUT_WRONG_URI = BASE_PATH_URI + "out\\wrong";
+    public final String DIR_OUT_SUCCESS_URI = BASE_PATH_URI + "out\\success";
+    public final String DIR_OUT_WRONG_URI = BASE_PATH_URI + "out\\wrong";
 
     /**
      * исходный path
@@ -23,11 +23,14 @@ public class BaseTest {
     public final String FILE1_URI_COPIED = IN_URI + "\\Entry1ForSuccessMoving.xml";
     public final String FILE2_URI_COPIED = IN_URI + "\\Entry2ForWrongMoving.xml";
 
-    public String FILE1_OUT_URI_SUCCESS = OUT_SUCCESS_URI + "\\Entry1ForSuccessMoving.xml";
-    public String FILE2_OUT_URI_SUCCESS = OUT_SUCCESS_URI + "\\Entry2ForSuccessMoving.xml";
+    public String FILE1_COPIED_OUT_URI_SUCCESS = DIR_OUT_SUCCESS_URI + "\\Entry1ForSuccessMoving.xml";
+    public String FILE2_COPIED_OUT_URI_SUCCESS = DIR_OUT_SUCCESS_URI + "\\Entry2ForSuccessMoving.xml";
 
-    public String FILE1_OUT_URI_WRONG = OUT_WRONG_URI + "\\Entry1ForWrongMoving.xml";
-    public String FILE2_OUT_URI_WRONG = OUT_WRONG_URI + "\\Entry2ForWrongMoving.xml";
+    public String FILE1_OUT_URI_SUCCESS = DIR_OUT_SUCCESS_URI + "\\Entry1.xml";
+    public String FILE2_OUT_URI_SUCCESS = DIR_OUT_SUCCESS_URI + "\\Entry2.xml";
+
+    public String FILE1_OUT_URI_WRONG = DIR_OUT_WRONG_URI + "\\Entry1ForWrongMoving.xml";
+    public String FILE2_OUT_URI_WRONG = DIR_OUT_WRONG_URI + "\\Entry2ForWrongMoving.xml";
 
 
     @Autowired

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.mail.kdog.BaseTest;
-import ru.mail.kdog.service.DirectoryObserver;
+import ru.mail.kdog.service.FileSystemService;
 import ru.mail.kdog.dto.Entry;
 
 import javax.xml.bind.JAXBException;
@@ -18,7 +18,7 @@ import java.io.IOException;
 public class FileMapperTests extends BaseTest {
 
 	@Autowired
-	DirectoryObserver directoryObserver;
+	FileSystemService fileSystemService;
 
 	@Autowired
 	FileMapper fileMapper;
@@ -28,8 +28,8 @@ public class FileMapperTests extends BaseTest {
 	public void fileToPojo() throws IOException, JAXBException {
 
 		var file = new File(FILE1_URI);
-		Entry entry = fileMapper.fileToPojo(file);
-		System.out.println(entry);
+		fileMapper.fileToDto(file)
+				.subscribe(System.out::println);
 	}
 
 

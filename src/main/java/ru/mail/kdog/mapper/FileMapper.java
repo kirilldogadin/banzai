@@ -1,6 +1,8 @@
 package ru.mail.kdog.mapper;
 
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 import ru.mail.kdog.dto.Entry;
 
 import java.io.File;
@@ -21,7 +23,9 @@ public class FileMapper {
      * @return EntityDto
      * @throws JAXBException
      */
-    public Entry fileToPojoExceptionally(File file) throws JAXBException {
+
+    @SneakyThrows(JAXBException.class)
+    public Entry fileToPojo(File file) {
         //TODO зачем каждый раз инициировать?? вынести в бины
         JAXBContext jaxbContext = JAXBContext.newInstance(Entry.class);
         Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
@@ -29,12 +33,8 @@ public class FileMapper {
 
     }
 
-    public Entry fileToPojo(File file) {
-        try {
-            return fileToPojoExceptionally(file);
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
-        }
-
+    //TODO по логике здесь должен быть Mono
+    public Mono<Entry> fileToDto(File file) {
+        return Mono.just(fileToPojo(file));
     }
 }
