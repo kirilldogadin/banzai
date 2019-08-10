@@ -43,7 +43,6 @@ public class MonitorServiceTests extends BaseTest {
     public void getListFilesFromDirTestNew() throws IOException {
         monitorService.loadListFiles(new File(IN_URI))
                 .subscribe(System.out::println);
-
     }
 
     @Test

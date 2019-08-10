@@ -125,21 +125,22 @@ public class MonitorService {
         Flux.just(monitorContext)
                 .flatMap(monitorContext1 -> fileSystemService.getListFilesFromDirAsync(monitorContext.getDirIn()))
                 //можно или тут или к след методу добавить обработку ошибки файловой системы
-                .onBackpressureBuffer() //TODO проверить с ним и без ОСНОВНАЯ фича вместое самописной очереди
-                .map(file -> fileMapper.fileToDto(file)
-                        //TODo здесь должен быть моно, оператор doOnEach не имеет смысла т.к. последователность всегда из одного элемента состоит и вся цепочка вернет 1 элемент
-                        .doOnEach(signal -> fileSystemService.moveFile(file,
-                                monitorContext.dirOutSuccess))
-                        //Todo тут надо вовзращать Empry в случае ошибки
-                        .onErrorResume(throwable -> {
-                            //Todo добавить условие для ошибки, если это ошибкавалидация то тогда перемещаем файл, если это ошибка файлового сервиса, то другое
-                            fileSystemService.moveFile(file, monitorContext.dirOutWrong);//вовзращает flux/Mono который в случае ошибки делает перемещение файла
-                            return Mono.empty();
-                        }))
+//                .onBackpressureBuffer() //TODO проверить с ним и без На нагрузке
+                .map(file ->
+                        Mono.justOrEmpty(file)
+                                .flatMap(fileMapper::fileToDto)
+                                .doOnEach(signal -> fileSystemService.moveFile(file,
+                                        monitorContext.dirOutSuccess))
+                                //TODO можно завязать логику не на ошибку, а проверку условную
+                                //TODO то есть вместо ошибки можно сделать метод valid
+                                .onErrorResume(throwable -> {
+                                    //Todo добавить условие для ошибки, если это ошибкавалидация то тогда перемещаем файл, если это ошибка файлового сервиса, то другое
+                                    fileSystemService.moveFile(file, monitorContext.dirOutWrong);
+                                    return Mono.empty();
+                                }))
                 .subscribe(entryMono -> entryMono.subscribe(entryRepository::save));
     }
 
-    //Todo обработать ошибку реактивно или null вернуть?
     private Entry convert(File file) {
         return fileMapper.fileToPojo(file);
     }
