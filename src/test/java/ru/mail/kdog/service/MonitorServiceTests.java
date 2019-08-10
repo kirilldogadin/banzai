@@ -37,8 +37,6 @@ public class MonitorServiceTests extends BaseTest {
     @Test
     public void getListFilesFromDirTestOld() throws IOException {
         Stream<Entry> join = monitorService.asyncHandleFilesOld(Paths.get(IN_URI))
-                //вывод в в лямбде поэтому его не видно
-//                .thenAccept(entryStream -> entryStream.forEach(System.out::println))
                 .join();
     }
 
@@ -46,12 +44,6 @@ public class MonitorServiceTests extends BaseTest {
     public void getListFilesFromDirTestNew() throws IOException {
         monitorService.loadListFiles(new File(IN_URI))
                 .subscribe(System.out::println);
-    }
-
-    @Test
-    public void asyncHandleDirTest() throws IOException {
-        monitorService.asyncHandleDir(new File(IN_URI));
-        Assert.assertTrue(entryRepository.count() == 2L);
     }
 
     @Test

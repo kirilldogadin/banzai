@@ -82,23 +82,8 @@ public class MonitorService {
     public Flux<Entry> loadListFiles(File dir) throws IOException {
         //todo разобраться является ли мап асинхронным
         return fileSystemService.getListFilesFromDirAsync(dir)
-                //TODO вот тут можно разбить обраотку файлов на группы!!
-                //буфферы паузы или что-то подобное, или просто батчаем(по 50-100 штук)
-                //TODO обработка файлов может быть параллельной!!!??? из xml в сущности
-                .flatMap(file -> fileMapper.fileToDto(file));
-    }
 
-    /***
-     * 1. Взять список файлов из папки
-     * 2. замапить файлы в объекты
-     * 3. сохранить в репозиторий
-     * @param dir дирекория мониторинга
-     * @throws IOException
-     */
-    public void asyncHandleDir(File dir) throws IOException {
-        fileSystemService.getListFilesFromDirAsync(dir)
-                .flatMap(fileMapper::fileToDto)
-                .subscribe(entryRepository::save);
+                .flatMap(file -> fileMapper.fileToDto(file));
     }
 
     /**
@@ -122,6 +107,9 @@ public class MonitorService {
     //TODO ВМЕСТО поля проверку на валид - конвертация и есть валидация?
     //TODO добавить валидацию полей в конвертацию?
     //TODO самое главное VAVR там паттерн матчинг
+    //TODO вот тут можно разбить обраотку файлов на группы!!
+    //TODO буфферы паузы или что-то подобное, или просто батчаем(по 50-100 штук)
+    //TODO обработка файлов может быть параллельной!!!??? из xml в сущности
     public void asyncHandleDir(MonitorContext monitorContext) {
         Flux.just(monitorContext)
                 .flatMap(monitorContext1 -> fileSystemService.getListFilesFromDirAsync(monitorContext.getDirIn()))
@@ -129,7 +117,7 @@ public class MonitorService {
 //                .onBackpressureBuffer() //TODO проверить с ним и без На нагрузке
                 .map(file ->
                         Mono.justOrEmpty(file)
-                                .flatMap(file1 -> fileMapper.fileToDto(file1))
+                                .flatMap(fileMapper::fileToDto)
                                 //doOnNext  и прочие методы попоробовать для peek каждого элемента)
                                 .doOnSuccess(entry -> {
                                     fileSystemService.moveFile(file,
