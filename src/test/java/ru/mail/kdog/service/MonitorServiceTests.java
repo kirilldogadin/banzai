@@ -57,7 +57,7 @@ public class MonitorServiceTests extends BaseTest {
                 new File(DIR_OUT_SUCCESS_URI),
                 new File(DIR_OUT_WRONG_URI));
         monitorService.asyncHandleDir(monitorContext);
-//        Assert.assertTrue(entryRepository.count() == 2L);
+        Assert.assertTrue(entryRepository.count()>0);
 //        Assert.assertTrue(Files.exists(Paths.get(FILE1_OUT_URI_SUCCESS)));
 //        Assert.assertTrue(Files.exists(Paths.get(FILE2_OUT_URI_SUCCESS)));
     }

@@ -2,6 +2,7 @@ package ru.mail.kdog.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -129,15 +130,24 @@ public class MonitorService {
                 .map(file ->
                         Mono.justOrEmpty(file)
                                 .flatMap(fileMapper::fileToDto)
-                                .doOnEach(signal -> fileSystemService.moveFile(file,
-                                        monitorContext.dirOutSuccess))
+                                //doOnNext  и прочие методы попоробовать для peek каждого элемента)
+                                .doOnSuccess(entry -> {
+                                    fileSystemService.moveFile(file,
+                                            monitorContext.dirOutSuccess);
+                                })
                                 //TODO можно завязать логику не на ошибку, а проверку условную
                                 //TODO то есть вместо ошибки можно сделать метод valid
-                                .onErrorResume(throwable -> {
+                                .onErrorResume(JAXBException.class, throwable -> {
                                     //Todo добавить условие для ошибки, если это ошибкавалидация то тогда перемещаем файл, если это ошибка файлового сервиса, то другое
+                                    //TODO !!!!!!!!!!1 ТУТ ВОЗНИКАЕТ ВТОРАЯ ОШИБКА И ПОТОК ПРЕРЫВАЕТСЯ
                                     fileSystemService.moveFile(file, monitorContext.dirOutWrong);
                                     return Mono.empty();
-                                }))
+                                })
+                                .onErrorResume(IOException.class, e -> {
+                                    System.out.println();
+                                    return Mono.empty();
+                                })
+                )
                 .subscribe(entryMono -> entryMono.subscribe(entryRepository::save));
     }
 
