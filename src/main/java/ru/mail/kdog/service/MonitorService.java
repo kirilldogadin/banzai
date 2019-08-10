@@ -129,7 +129,7 @@ public class MonitorService {
 //                .onBackpressureBuffer() //TODO проверить с ним и без На нагрузке
                 .map(file ->
                         Mono.justOrEmpty(file)
-                                .flatMap(fileMapper::fileToDto)
+                                .flatMap(file1 -> fileMapper.fileToDto(file1))
                                 //doOnNext  и прочие методы попоробовать для peek каждого элемента)
                                 .doOnSuccess(entry -> {
                                     fileSystemService.moveFile(file,
