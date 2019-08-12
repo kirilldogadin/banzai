@@ -1,6 +1,7 @@
 package ru.mail.kdog.service;
 
 import org.springframework.stereotype.Service;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.mail.kdog.dto.MonitorContext;
@@ -58,11 +59,13 @@ public class MonitorService {
     //TODO вот тут можно разбить обраотку файлов на группы!!
     //TODO буфферы паузы или что-то подобное, или просто батчаем(по 50-100 штук)
     //TODO обработка файлов может быть параллельной!!!??? из xml в сущности
-    public void asyncHandleDir(MonitorContext monitorContext) {
-        Flux.just(monitorContext)
+    public Disposable asyncHandleDir(MonitorContext monitorContext) {
+        return Flux.just(monitorContext)
+
                 .flatMap(monitorContext1 -> fileSystemService.getListFilesFromDirAsync(monitorContext.getDirIn()))
                 //можно или тут или к след методу добавить обработку ошибки файловой системы
 //                .onBackpressureBuffer() //TODO проверить с ним и без На нагрузке
+                .log()
                 .map(file ->
                         Mono.justOrEmpty(file)
                                 .flatMap(fileMapper::fileToDto)

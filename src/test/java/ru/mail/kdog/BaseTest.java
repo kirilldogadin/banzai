@@ -2,9 +2,14 @@ package ru.mail.kdog;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.mail.kdog.config.*;
+import ru.mail.kdog.dto.MonitorContext;
+
+import java.io.File;
+import java.time.Duration;
 
 
 public class BaseTest {
+
 
     public final String BASE_PATH_URI = ".\\src\\test\\resources\\app\\";
     public final String FILE1_NAME = "\\Entry1.xml";
@@ -31,6 +36,12 @@ public class BaseTest {
 
     public String FILE1_OUT_URI_WRONG = DIR_OUT_WRONG_URI + "\\Entry1ForWrongMoving.xml";
     public String FILE2_OUT_URI_WRONG = DIR_OUT_WRONG_URI + "\\Entry2ForWrongMoving.xml";
+
+
+    public MonitorContext monitorContext = new MonitorContext(new File(IN_URI),
+            new File(DIR_OUT_SUCCESS_URI),
+            new File(DIR_OUT_WRONG_URI),
+            Duration.ofSeconds(6));
 
 
     @Autowired

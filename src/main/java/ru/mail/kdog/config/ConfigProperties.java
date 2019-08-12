@@ -14,16 +14,15 @@ import java.time.Duration;
 
 /**
  * Содержит настройки
- *
- *
  */
 //TODO как бин иницировать в фйле конфига?
-    //TODO инжектить проперти из файла + @RefreshScope
+//TODO инжектить проперти из файла + @RefreshScope
 //@Service
 @ConfigurationProperties(prefix = "app")
 @Setter
 @Getter
 public class ConfigProperties {
+    //TODO вынеси сюда дефолтные значения (в константы)
 
     //TODO файл передлать на yaml
     //TODO Проверть как аргумент и как env
@@ -35,19 +34,21 @@ public class ConfigProperties {
     public File dirOutSuccessFile;
     public File dirOutWrongFile;
     public File dirInFile;
-    public Duration monitorPeriod;
+    //TODO добавить валидацию
+    public Duration monitorPeriod = Duration.ofMinutes(15);
 
     @Bean
-    public MonitorContext monitorContext(){
+    public MonitorContext monitorContext() {
         return MonitorContext.builder()
                 .dirIn(dirInFile)
                 .dirOutSuccess(dirOutSuccessFile)
                 .dirOutWrong(dirOutWrongFile)
+                .monitorPeriod(monitorPeriod)
                 .build();
     }
 
     @Bean
-    public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler
                 = new ThreadPoolTaskScheduler();
         threadPoolTaskScheduler.setPoolSize(5);
@@ -57,11 +58,10 @@ public class ConfigProperties {
     }
 
     @PostConstruct
-    public void init(){
-        //TODO здесь рожать Bean MonitorContext
-     dirInFile = new File(dirIn);
-     dirOutSuccessFile = new File(dirOutSuccess);
-     dirOutSuccessFile = new File(dirOutWrong);
+    public void init() {
+        dirInFile = new File(dirIn);
+        dirOutSuccessFile = new File(dirOutSuccess);
+        dirOutWrongFile = new File(dirOutWrong);
     }
 
 
