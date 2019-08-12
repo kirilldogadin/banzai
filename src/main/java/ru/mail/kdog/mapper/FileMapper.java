@@ -1,10 +1,9 @@
 package ru.mail.kdog.mapper;
 
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import ru.mail.kdog.dto.Entry;
+import ru.mail.kdog.entity.Entry;
 
 import java.io.*;
 import javax.annotation.PostConstruct;

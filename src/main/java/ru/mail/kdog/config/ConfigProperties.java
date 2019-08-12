@@ -1,14 +1,15 @@
 package ru.mail.kdog.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.mail.kdog.dto.MonitorContext;
 
 import javax.annotation.PostConstruct;
-import javax.validation.Valid;
 import java.io.File;
+import java.time.Duration;
 
 
 /**
@@ -18,72 +19,49 @@ import java.io.File;
  */
 //TODO как бин иницировать в фйле конфига?
     //TODO инжектить проперти из файла + @RefreshScope
-@Service
-//@ConfigurationProperties(prefix = "app")
-//@PropertySource("classpath:application.properties")
+//@Service
+@ConfigurationProperties(prefix = "app")
+@Setter
+@Getter
 public class ConfigProperties {
-//    @Value("${app.dirin}")
-    private String dirIn;
-    private String dirOutSuccess;
-    private String dirOutWrong;
 
-    public File outSuccessDirFile;
-    public File outWrongDirFile;
-    public File inDirFile;
+    //TODO файл передлать на yaml
+    //TODO Проверть как аргумент и как env
+    //TODO аругменты по умолчанию
+    private String dirIn = ".";
+    private String dirOutSuccess = "./success";
+    private String dirOutWrong = "./wrong";
+
+    public File dirOutSuccessFile;
+    public File dirOutWrongFile;
+    public File dirInFile;
+    public Duration monitorPeriod;
+
+    @Bean
+    public MonitorContext monitorContext(){
+        return MonitorContext.builder()
+                .dirIn(dirInFile)
+                .dirOutSuccess(dirOutSuccessFile)
+                .dirOutWrong(dirOutWrongFile)
+                .build();
+    }
+
+    @Bean
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler(){
+        ThreadPoolTaskScheduler threadPoolTaskScheduler
+                = new ThreadPoolTaskScheduler();
+        threadPoolTaskScheduler.setPoolSize(5);
+        threadPoolTaskScheduler.setThreadNamePrefix(
+                "ThreadPoolTaskScheduler");
+        return threadPoolTaskScheduler;
+    }
 
     @PostConstruct
     public void init(){
-//     inDirFile = new File(dirIn);
-//     outSuccessDirFile = new File(dirOutSuccess);
-//     outSuccessDirFile = new File(dirOutWrong);
-    }
-
-    public File getOutSuccessDirFile() {
-        return outSuccessDirFile;
-    }
-
-    public void setOutSuccessDirFile(File outSuccessDirFile) {
-        this.outSuccessDirFile = outSuccessDirFile;
-    }
-
-    public File getOutWrongDirFile() {
-        return outWrongDirFile;
-    }
-
-    public void setOutWrongDirFile(File outWrongDirFile) {
-        this.outWrongDirFile = outWrongDirFile;
-    }
-
-    public File getInDirFile() {
-        return inDirFile;
-    }
-
-    public void setInDirFile(File inDirFile) {
-        this.inDirFile = inDirFile;
-    }
-
-    public String getDirIn() {
-        return dirIn;
-    }
-
-    public void setDirIn(String dirIn) {
-        this.dirIn = dirIn;
-    }
-
-    public String getDirOutSuccess() {
-        return dirOutSuccess;
-    }
-
-    public void setDirOutSuccess(String dirOutSuccess) {
-        this.dirOutSuccess = dirOutSuccess;
-    }
-
-    public String getDirOutWrong() {
-        return dirOutWrong;
-    }
-
-    public void setDirOutWrong(String dirOutWrong) {
-        this.dirOutWrong = dirOutWrong;
+        //TODO здесь рожать Bean MonitorContext
+     dirInFile = new File(dirIn);
+     dirOutSuccessFile = new File(dirOutSuccess);
+     dirOutSuccessFile = new File(dirOutWrong);
     }
 
 

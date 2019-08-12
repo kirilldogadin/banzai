@@ -13,9 +13,8 @@ import ru.mail.kdog.config.ConfigProperties;
 
 @SpringBootApplication
 @EnableJpaRepositories
-//@EnableConfigurationProperties(ConfigProperties.class)
+@EnableConfigurationProperties(ConfigProperties.class)
 public class DemoApplication {
-
 
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);

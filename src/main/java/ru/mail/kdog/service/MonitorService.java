@@ -1,21 +1,14 @@
 package ru.mail.kdog.service;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import ru.mail.kdog.dto.Entry;
+import ru.mail.kdog.dto.MonitorContext;
 import ru.mail.kdog.mapper.FileMapper;
 import ru.mail.kdog.repository.EntryRepository;
 
 import javax.xml.bind.JAXBException;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Stream;
 
 /**
  * Класс содержит основную логику приложения
@@ -40,51 +33,6 @@ public class MonitorService {
         this.entryRepository = entryRepository;
     }
 
-    //TODO вот это лучше сделать реактивно
-    //или через очередь т.к. файлов может быть миллионы - то есть надо брать файлы и класть в очередь
-    //типичная задача читатель писатель
-    //TODO да и брать ВСЕ файлы воообще космически дорого, А если память кончится?
-    public Stream<Entry> handleAllFiles(Path path) throws IOException {
-        return fileSystemService.getListFilesFromDir(path)
-                .map(Path::toFile)
-                .map(this::convert);
-    }
-
-    //TODO разделить пулы Executors
-    //TODO добавить очередь и подпись на очередь
-    @Deprecated
-    public CompletableFuture<Stream<Entry>> asyncHandleFilesOld(Path path) {
-
-        var future = CompletableFuture.supplyAsync(() ->
-        {
-            try {
-                return fileSystemService.getListFilesFromDir(path);
-            } catch (IOException e) {
-            }
-            return null;
-        });
-
-        return future.thenApply(pathStream -> pathStream.map(path1 -> {
-            return fileMapper.fileToPojo(path.toFile());
-        }));
-
-    }
-
-    /**
-     * сначала получить список файлов из директории
-     * замапить список файлов в сущности
-     *
-     * @param dir directory
-     * @return
-     * @throws IOException
-     */
-    //Todo название
-    public Flux<Entry> loadListFiles(File dir) throws IOException {
-        //todo разобраться является ли мап асинхронным
-        return fileSystemService.getListFilesFromDirAsync(dir)
-
-                .flatMap(file -> fileMapper.fileToDto(file));
-    }
 
     /**
      * Полная обработка
@@ -118,16 +66,14 @@ public class MonitorService {
                 .map(file ->
                         Mono.justOrEmpty(file)
                                 .flatMap(fileMapper::fileToDto)
-                                //doOnNext  и прочие методы попоробовать для peek каждого элемента)
                                 .doOnSuccess(entry -> {
                                     fileSystemService.moveFile(file,
                                             monitorContext.dirOutSuccess);
                                 })
                                 //TODO можно завязать логику не на ошибку, а проверку условную
                                 //TODO то есть вместо ошибки можно сделать метод valid
+                                //Todo добавить условие для ошибки, если это ошибкавалидация то тогда перемещаем файл, если это ошибка файлового сервиса, то другое
                                 .onErrorResume(JAXBException.class, throwable -> {
-                                    //Todo добавить условие для ошибки, если это ошибкавалидация то тогда перемещаем файл, если это ошибка файлового сервиса, то другое
-                                    //TODO !!!!!!!!!!1 ТУТ ВОЗНИКАЕТ ВТОРАЯ ОШИБКА И ПОТОК ПРЕРЫВАЕТСЯ
                                     fileSystemService.moveFile(file, monitorContext.dirOutWrong);
                                     return Mono.empty();
                                 })
@@ -139,20 +85,5 @@ public class MonitorService {
                 .subscribe(entryMono -> entryMono.subscribe(entryRepository::save));
     }
 
-    private Entry convert(File file) {
-        return fileMapper.fileToPojo(file);
-    }
 
-    /**
-     * объект содержащий настройки
-     * директория мониторинга
-     * директироия обработыннх и тд
-     */
-    @AllArgsConstructor
-    @Getter
-    public static class MonitorContext {
-        File dirIn;
-        File dirOutSuccess;
-        File dirOutWrong;
-    }
 }

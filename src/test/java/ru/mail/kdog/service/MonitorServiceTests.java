@@ -7,15 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.mail.kdog.BaseTest;
-import ru.mail.kdog.dto.Entry;
+import ru.mail.kdog.dto.MonitorContext;
 import ru.mail.kdog.repository.EntryRepository;
 
 import javax.transaction.Transactional;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.stream.Stream;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -24,8 +22,9 @@ public class MonitorServiceTests extends BaseTest {
 
     //TODO создаваь файлы и дирекории для тестов и подчищать после
 
+    //TODO для тестов использовать что предлагает Reactor
     @Autowired
-    FileSystemService dirObsever;
+    FileSystemService dirObserver;
 
     @Autowired
     MonitorService monitorService;
@@ -33,22 +32,9 @@ public class MonitorServiceTests extends BaseTest {
     @Autowired
     EntryRepository entryRepository;
 
-    //Todo добавить validate
     @Test
-    public void getListFilesFromDirTestOld() throws IOException {
-        Stream<Entry> join = monitorService.asyncHandleFilesOld(Paths.get(IN_URI))
-                .join();
-    }
-
-    @Test
-    public void getListFilesFromDirTestNew() throws IOException {
-        monitorService.loadListFiles(new File(IN_URI))
-                .subscribe(System.out::println);
-    }
-
-    @Test
-    public void asyncHandleDirFullTest(){
-        var monitorContext = new MonitorService.MonitorContext(new File(IN_URI),
+    public void asyncHandleDirTest(){
+        var monitorContext = new MonitorContext(new File(IN_URI),
                 new File(DIR_OUT_SUCCESS_URI),
                 new File(DIR_OUT_WRONG_URI));
         monitorService.asyncHandleDir(monitorContext);

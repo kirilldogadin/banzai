@@ -1,4 +1,4 @@
-package ru.mail.kdog.dto;
+package ru.mail.kdog.entity;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

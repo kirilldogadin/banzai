@@ -7,7 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.mail.kdog.BaseTest;
 import ru.mail.kdog.service.FileSystemService;
-import ru.mail.kdog.dto.Entry;
 
 import javax.xml.bind.JAXBException;
 import java.io.File;
