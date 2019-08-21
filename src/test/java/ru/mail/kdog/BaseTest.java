@@ -10,7 +10,6 @@ import java.time.Duration;
 
 public class BaseTest {
 
-
     public final String BASE_PATH_URI = ".\\src\\test\\resources\\app\\";
     public final String FILE1_NAME = "\\Entry1.xml";
     public final String FILE2_NAME = "\\Entry2.xml";
@@ -41,7 +40,7 @@ public class BaseTest {
     public MonitorContext monitorContext = new MonitorContext(new File(IN_URI),
             new File(DIR_OUT_SUCCESS_URI),
             new File(DIR_OUT_WRONG_URI),
-            Duration.ofSeconds(6));
+            Duration.ofSeconds(3));
 
 
     @Autowired

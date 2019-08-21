@@ -3,9 +3,9 @@ package ru.mail.kdog.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.PeriodicTrigger;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * управления тасками,
@@ -14,37 +14,34 @@ import java.time.Duration;
  * вывод информации в консоль?
  */
 public abstract class TaskManager {
-    //TODO создать наследника который рабоает уже содрежит задачи и паттерн стартегия
-    //TODO в наследнике не передаются Runnable ну или передаюся спец тип задач
-    //TODO создать свой тип задачи?
 
     @Autowired
     ThreadPoolTaskScheduler monitoringTaskScheduler;
 
-    void taskStart(Runnable task, PeriodicTrigger periodicTrigger){
-        monitoringTaskScheduler.schedule(task, periodicTrigger);
+    ScheduledFuture<?> taskStart(Runnable task, PeriodicTrigger periodicTrigger){
+        return monitoringTaskScheduler.schedule(task, periodicTrigger);
     }
 
-
-    //TODO 2 последних метода через стратегию реализоваь
     /**
      * запускает новую задачу
-     * ДО окончания старой -TODO проверить
+     * ДО окончания старой
      * @param task задача
      * @param duration периодичность
+     * @return future задачи
      */
-    void taskStartFixed(Runnable task, Duration duration ){
-        monitoringTaskScheduler.scheduleAtFixedRate(task,duration);
+    ScheduledFuture<?> taskStartFixed(Runnable task, Duration duration ){
+        return monitoringTaskScheduler.scheduleAtFixedRate(task,duration);
     }
 
     /**
      * Запускает новую задачу
-     * ПОСЛЕ окончания старой - TODO проверить
-     * @param task
-     * @param duration
+     * ПОСЛЕ окончания старой
+     * @param task runnable задача
+     * @param duration Duration задержки между проверками
+     * @return future задачи
      */
-   void taskStartDelay(Runnable task, Duration duration ){
-        monitoringTaskScheduler.scheduleWithFixedDelay(task,duration);
+   ScheduledFuture<?> taskStartDelay(Runnable task, Duration duration ){
+       return monitoringTaskScheduler.scheduleWithFixedDelay(task,duration);
     }
 
 }

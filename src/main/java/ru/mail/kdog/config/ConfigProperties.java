@@ -6,8 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.mail.kdog.dto.MonitorContext;
+import ru.mail.kdog.entity.Entry;
 
 import javax.annotation.PostConstruct;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.time.Duration;
 
@@ -22,11 +26,8 @@ import java.time.Duration;
 @Setter
 @Getter
 public class ConfigProperties {
-    //TODO вынеси сюда дефолтные значения (в константы)
 
     //TODO файл передлать на yaml
-    //TODO Проверть как аргумент и как env
-    //TODO аругменты по умолчанию
     private String dirIn = ".";
     private String dirOutSuccess = "./success";
     private String dirOutWrong = "./wrong";
@@ -34,7 +35,6 @@ public class ConfigProperties {
     public File dirOutSuccessFile;
     public File dirOutWrongFile;
     public File dirInFile;
-    //TODO добавить валидацию
     public Duration monitorPeriod = Duration.ofMinutes(15);
 
     @Bean
@@ -56,6 +56,18 @@ public class ConfigProperties {
                 "ThreadPoolTaskScheduler");
         return threadPoolTaskScheduler;
     }
+
+    @Bean
+    public JAXBContext jaxbContext() throws JAXBException {
+        return JAXBContext.newInstance(Entry.class);
+    }
+
+    @Bean
+    public Unmarshaller unmarshaller(JAXBContext jaxbContext) throws JAXBException {
+        return jaxbContext.createUnmarshaller();
+    }
+
+
 
     @PostConstruct
     public void init() {

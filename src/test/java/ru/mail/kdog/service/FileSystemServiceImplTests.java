@@ -13,23 +13,21 @@ import ru.mail.kdog.BaseTest;
 
 import javax.transaction.Transactional;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 /**
  * Tест создает копии файлов и подчищает файлы после
- * TODO создать файловую структуру если её нет?
  * для корректной работы необходимо наличие структуры в файловой системе файлов описанной в BaseTest
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @Transactional
-public class FileSystemServiceTests extends BaseTest {
+public class FileSystemServiceImplTests extends BaseTest {
 
     @Autowired
-    FileSystemService fileService;
+    FileSystemServiceImpl fileService;
 
     @Before
     @SneakyThrows
@@ -48,13 +46,6 @@ public class FileSystemServiceTests extends BaseTest {
         Files.deleteIfExists(Paths.get(FILE2_OUT_URI_WRONG));
     }
 
-    //Todo добавить validate
-    @Test
-    public void getListFilesFromDirTest() throws IOException {
-        fileService.getListFilesFromDir(Paths.get(IN_URI))
-                .forEach(System.out::println);
-    }
-
     @Test
     public void getListFilesFromDirTestAsync() {
         fileService.getListFilesFromDirAsync(new File(IN_URI))
@@ -63,7 +54,6 @@ public class FileSystemServiceTests extends BaseTest {
 
     @Test
     public void moveFileSuccessTest() {
-        //BaseTest? или наверх
         fileService.moveFile(Paths.get(FILE1_URI_COPIED), Paths.get(FILE1_COPIED_OUT_URI_SUCCESS));
         Assert.assertTrue(Files.exists(Paths.get(FILE1_COPIED_OUT_URI_SUCCESS)));
     }
@@ -78,9 +68,9 @@ public class FileSystemServiceTests extends BaseTest {
     public void getOutPathTest() {
         var file = new File(FILE1_URI);
         var outDir = new File(DIR_OUT_SUCCESS_URI);
-        var outPath = fileService.getOutPath(file, outDir);
+        var outPath = fileService.getFileOutPath(file, outDir);
         var rightOutPath = Paths.get(DIR_OUT_SUCCESS_URI + FILE1_NAME);
-        Assert.assertTrue(outPath.equals(rightOutPath));
+        Assert.assertEquals(outPath, rightOutPath);
     }
 
     @Test

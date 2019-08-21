@@ -8,8 +8,7 @@ import java.util.Objects;
 
 @XmlRootElement(name = "Entry")
 @Entity
-public class Entry
-{
+public class Entry extends BaseEntity{
     @Id
     @GeneratedValue
     private Long id;

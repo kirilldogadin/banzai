@@ -1,8 +1,10 @@
 package ru.mail.kdog.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.beans.ConstructorProperties;
 import java.io.File;
 import java.time.Duration;
 
@@ -21,9 +23,4 @@ public class MonitorContext {
     public final File dirOutWrong;
     public Duration monitorPeriod;
 
-    public MonitorContext(File dirIn, File dirOutSuccess, File dirOutWrong) {
-        this.dirIn = dirIn;
-        this.dirOutSuccess = dirOutSuccess;
-        this.dirOutWrong = dirOutWrong;
-    }
 }
