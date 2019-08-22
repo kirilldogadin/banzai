@@ -1,18 +1,39 @@
 package ru.mail.kdog.service;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.mail.kdog.BaseTest;
+import ru.mail.kdog.service.abstr.FileSystemService;
 
+import java.io.File;
 import java.time.Duration;
 import java.util.concurrent.ScheduledFuture;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class TaskManagerTest extends BaseTest {
+
+    @Autowired
+    FileSystemService fileSystemService;
+
+    @After
+    public void returnFilesBack() {
+        File fromSuccess = new File(DIR_OUT_SUCCESS_URI);
+        File fromWrong = new File(DIR_OUT_WRONG_URI);
+        File to = new File(IN_URI);
+        moveFile(fromSuccess, to);
+        moveFile(fromWrong, to);
+    }
+
+    public void moveFile(File from, File to) {
+        fileSystemService.getListFilesFromDirAsync(from)
+                .doOnNext(file -> fileSystemService.moveFile(file, to))
+                .blockLast();
+    }
 
     @Autowired
     MonitorTaskManagerImpl taskManager;
