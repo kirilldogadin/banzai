@@ -10,7 +10,6 @@ import javax.xml.bind.Unmarshaller;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 
 @Service
 public class MapperFile extends FileAbstractMapper<File, Entry> {
@@ -25,7 +24,6 @@ public class MapperFile extends FileAbstractMapper<File, Entry> {
      * отображает файл xml в java Object
      * @param file file
      * @return EntityDto
-     * @throws JAXBException
      */
     @SneakyThrows
     @Override
@@ -33,8 +31,6 @@ public class MapperFile extends FileAbstractMapper<File, Entry> {
         try (var fs = new FileInputStream(file);
              var bs = new BufferedInputStream(fs)) {
             return (Entry) jaxbUnmarshaller.unmarshal(bs);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 

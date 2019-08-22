@@ -1,5 +1,6 @@
 package ru.mail.kdog.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -8,17 +9,14 @@ import org.springframework.stereotype.Component;
 import ru.mail.kdog.dto.MonitorContext;
 import ru.mail.kdog.service.MonitorTaskManagerImpl;
 
+@Slf4j
+@Profile({"prod","dev"})
 @Component
-@Profile("dev")
 public class StartupTask {
 
-    final
-    MonitorTaskManagerImpl taskManager;
-
-    final
-    MonitorContext monitorContext;
-
-    final ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    private final MonitorTaskManagerImpl taskManager;
+    private final MonitorContext monitorContext;
+    private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
     public StartupTask(MonitorTaskManagerImpl taskManager, MonitorContext monitorContext, ThreadPoolTaskScheduler threadPoolTaskScheduler) {
         this.taskManager = taskManager;
@@ -28,6 +26,7 @@ public class StartupTask {
 
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        taskManager.monitoringTaskStartReactor(monitorContext);
+        log.info("Run task by app start event");
+        taskManager.monitorTaskStart(monitorContext);
     }
 }

@@ -1,9 +1,6 @@
 package ru.mail.kdog.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.File;
 import java.time.Duration;
@@ -17,6 +14,8 @@ import java.time.Duration;
 @Getter
 @Setter
 @Builder
+@EqualsAndHashCode
+@ToString
 public class MonitorContext {
     public final File dirIn;
     public final File dirOutSuccess;

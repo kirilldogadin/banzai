@@ -1,5 +1,6 @@
 package ru.mail.kdog.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -26,6 +27,7 @@ import java.io.IOException;
  * <p>
  * в случае неудачи файл перемещается в другую директорию
  */
+@Slf4j
 @Service
 public class MonitorServiceImpl implements MonitorService {
 
@@ -55,23 +57,25 @@ public class MonitorServiceImpl implements MonitorService {
     @Override
     public Disposable asyncHandleDir(MonitorContext monitorContext) {
         return Flux.just(monitorContext)
-
                 .flatMap(monitorContext1 -> fileSystemService.getListFilesFromDirAsync(monitorContext.getDirIn()))
-                .log()
                 .map(file ->
                         Mono.justOrEmpty(file)
+                                .doOnNext(file1 ->  log.info("Begin handling file" + file.getName()))
                                 .flatMap(fileMapper::fileToMonoDto)
                                 .doOnSuccess(entry -> fileSystemService.moveFile(file,
                                         monitorContext.dirOutSuccess))
-                                .onErrorResume(JAXBException.class, throwable -> {
+                                .doOnSuccess(entry -> log.info("File handle success. " + file.getName()))
+                                .onErrorResume(JAXBException.class, e -> {
                                     fileSystemService.moveFile(file, monitorContext.dirOutWrong);
+                                    log.error("Mapping File error. " + file.getName(), e.getCause());
                                     return Mono.empty();
                                 })
                                 .onErrorResume(IOException.class, e -> {
-                                    System.out.println();
+                                 log.error("File handling error. " + file.getName(), e.getCause());
                                     return Mono.empty();
                                 })
                 )
+                .doOnError(throwable -> log.error(" Error.", throwable))
                 .subscribe(entryMono -> entryMono.subscribe(entryRepository::save));
     }
 }

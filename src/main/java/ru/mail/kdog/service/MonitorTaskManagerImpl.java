@@ -1,5 +1,6 @@
 package ru.mail.kdog.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -9,6 +10,7 @@ import ru.mail.kdog.service.abstr.MonitorTaskManager;
 import java.time.Duration;
 import java.util.concurrent.ScheduledFuture;
 
+@Slf4j
 @Service
 public class MonitorTaskManagerImpl extends TaskManager implements MonitorTaskManager {
 
@@ -26,7 +28,8 @@ public class MonitorTaskManagerImpl extends TaskManager implements MonitorTaskMa
 
     @Override
     public ScheduledFuture<?> monitorTaskStart(MonitorContext monitorContext) {
-         return taskStartDelay(() -> monitorService.asyncHandleDir(monitorContext),
+        log.info("Start task. " + monitorContext.toString());
+        return taskStartDelay(() -> monitorService.asyncHandleDir(monitorContext),
                 monitorContext.monitorPeriod);
     }
 
