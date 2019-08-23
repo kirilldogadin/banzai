@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.mail.kdog.dto.MonitorContext;
 import ru.mail.kdog.entity.Entry;
+import ru.mail.kdog.validation.EntryValidator;
 
 import javax.annotation.PostConstruct;
 import javax.xml.bind.JAXBContext;
@@ -14,20 +15,18 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.time.Duration;
+import java.time.format.DateTimeFormatter;
 
 
 /**
  * Содержит настройки
  */
-//TODO как бин иницировать в фйле конфига?
-//TODO инжектить проперти из файла + @RefreshScope
 //@Service
 @ConfigurationProperties(prefix = "app")
 @Setter
 @Getter
 public class ConfigProperties {
 
-    //TODO файл передлать на yaml
     private String dirIn = ".";
     private String dirOutSuccess = "./success";
     private String dirOutWrong = "./wrong";
@@ -36,6 +35,8 @@ public class ConfigProperties {
     public File dirOutWrongFile;
     public File dirInFile;
     public Duration monitorPeriod = Duration.ofMinutes(15);
+
+    public String validationDateFormat = "yyyy-MM-dd' 'HH:mm:ss";
 
     @Bean
     public MonitorContext monitorContext() {
@@ -63,11 +64,14 @@ public class ConfigProperties {
     }
 
     @Bean
-    public Unmarshaller unmarshaller(JAXBContext jaxbContext) throws JAXBException {
+    public Unmarshaller  unmarshaller(JAXBContext jaxbContext) throws JAXBException {
         return jaxbContext.createUnmarshaller();
     }
 
-
+    @Bean
+    public EntryValidator entryValidator(){
+        return new EntryValidator(DateTimeFormatter.ofPattern(validationDateFormat));
+    }
 
     @PostConstruct
     public void init() {
@@ -75,6 +79,5 @@ public class ConfigProperties {
         dirOutSuccessFile = new File(dirOutSuccess);
         dirOutWrongFile = new File(dirOutWrong);
     }
-
 
 }

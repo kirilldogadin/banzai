@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import ru.mail.kdog.entity.Entry;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -22,6 +21,7 @@ public class MapperFile extends FileAbstractMapper<File, Entry> {
 
     /**
      * отображает файл xml в java Object
+     *
      * @param file file
      * @return EntityDto
      */

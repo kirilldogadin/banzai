@@ -12,10 +12,12 @@ import ru.mail.kdog.mapper.MapperFile;
 import ru.mail.kdog.repository.EntryRepository;
 import ru.mail.kdog.service.abstr.FileSystemService;
 import ru.mail.kdog.service.abstr.MonitorService;
+import ru.mail.kdog.validation.Validator;
 
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
+import java.time.format.DateTimeParseException;
 
 /**
  * Класс содержит основную логику приложения
@@ -34,11 +36,13 @@ public class MonitorServiceImpl implements MonitorService {
     private final FileSystemService fileSystemService;
     private final Mapper<File, Entry> fileMapper;
     private final EntryRepository entryRepository;
+    private final Validator<Entry> validator;
 
-    public MonitorServiceImpl(FileSystemServiceImpl fileSystemService, MapperFile fileMapper, EntryRepository entryRepository) {
+    public MonitorServiceImpl(FileSystemServiceImpl fileSystemService, MapperFile fileMapper, EntryRepository entryRepository, Validator<Entry> validator) {
         this.fileSystemService = fileSystemService;
         this.fileMapper = fileMapper;
         this.entryRepository = entryRepository;
+        this.validator = validator;
     }
 
     /**
@@ -60,8 +64,9 @@ public class MonitorServiceImpl implements MonitorService {
                 .flatMap(monitorContext1 -> fileSystemService.getListFilesFromDirAsync(monitorContext.getDirIn()))
                 .map(file ->
                         Mono.justOrEmpty(file)
-                                .doOnNext(file1 ->  log.info("Begin handling file" + file.getName()))
+                                .doOnNext(file1 -> log.info("Begin handling file" + file.getName()))
                                 .flatMap(fileMapper::fileToMonoDto)
+                                .doOnNext(validator::valid)
                                 .doOnSuccess(entry -> fileSystemService.moveFile(file,
                                         monitorContext.dirOutSuccess))
                                 .doOnSuccess(entry -> log.info("File handle success. " + file.getName()))
@@ -70,8 +75,19 @@ public class MonitorServiceImpl implements MonitorService {
                                     log.error("Mapping File error. " + file.getName(), e.getCause());
                                     return Mono.empty();
                                 })
+                                .onErrorResume(JAXBException.class, e -> {
+                                    fileSystemService.moveFile(file, monitorContext.dirOutWrong);
+                                    log.error("Mapping File error. " + file.getName(), e.getCause());
+                                    return Mono.empty();
+                                })
+                                .onErrorResume(DateTimeParseException.class, e -> {
+                                    fileSystemService.moveFile(file, monitorContext.dirOutWrong);
+                                    log.error("Cannot validate field creationDate of Entry "
+                                            + ". See validation-date-format properties");
+                                    return Mono.empty();
+                                })
                                 .onErrorResume(IOException.class, e -> {
-                                 log.error("File handling error. " + file.getName(), e.getCause());
+                                    log.error("File handling error. " + file.getName(), e.getCause());
                                     return Mono.empty();
                                 })
                 )

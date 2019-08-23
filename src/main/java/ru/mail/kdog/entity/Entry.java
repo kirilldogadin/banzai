@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.Objects;
 
 @XmlRootElement(name = "Entry")
@@ -11,8 +12,9 @@ import java.util.Objects;
 public class Entry extends BaseEntity{
     @Id
     @GeneratedValue
+    @XmlTransient
     private Long id;
-    //Todo дата подумать? нужен ли маппинг
+
     private String creationDate;
 
     private String content;
