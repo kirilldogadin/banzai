@@ -5,6 +5,7 @@ test tasks
 For Start app:
 Проект обычный springBoot2 application. 
 Внешняя зависимость:
+
 1. Postgresql установить/инициалзировать
 (как вариант докер )
 
@@ -12,9 +13,11 @@ For Start app:
 
 в resources лежит sql создания таблицы, но  в конфиге ddl-auto = update
 так что применять его не обязательно
+
 2. Клонировать
 
 `git clone https://github.com/kirilldogadin/banzai`
+
 3. Cобрать jar 
 
 `./gradlew bootJar`
