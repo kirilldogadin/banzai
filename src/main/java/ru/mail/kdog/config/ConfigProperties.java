@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 /**
  * Содержит настройки
  */
-//@Service
 @ConfigurationProperties(prefix = "app")
 @Setter
 @Getter

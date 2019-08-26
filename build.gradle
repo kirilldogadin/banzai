@@ -5,8 +5,8 @@ plugins {
 
 apply plugin: 'io.spring.dependency-management'
 
-group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+group = 'ru.mail.kdog'
+version = '0.0.1'
 sourceCompatibility = '11'
 
 configurations {
@@ -25,6 +25,7 @@ dependencies {
 	testCompile group: 'com.h2database', name: 'h2', version: '1.4.199'
 	// https://mvnrepository.com/artifact/org.projectlombok/lombok
 	compileOnly 'org.projectlombok:lombok:1.18.8'
+	testCompileOnly 'org.projectlombok:lombok:1.18.8'
 	annotationProcessor 'org.projectlombok:lombok:1.18.8'
     // https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api
 	compile group: 'javax.xml.bind', name: 'jaxb-api'

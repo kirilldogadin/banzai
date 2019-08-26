@@ -13,6 +13,7 @@ import ru.mail.kdog.BaseTest;
 
 import javax.transaction.Transactional;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -30,15 +31,13 @@ public class FileSystemServiceImplTests extends BaseTest {
     FileSystemServiceImpl fileService;
 
     @Before
-    @SneakyThrows
-    public void initFiles() {
+    public void initFiles() throws IOException {
         Files.copy(Paths.get(FILE1_URI), Paths.get(FILE1_URI_COPIED), StandardCopyOption.REPLACE_EXISTING);
         Files.copy(Paths.get(FILE2_URI), Paths.get(FILE2_URI_COPIED), StandardCopyOption.REPLACE_EXISTING);
     }
 
     @After
-    @SneakyThrows
-    public void destructFiles() {
+    public void destructFiles() throws IOException {
         Files.deleteIfExists(Paths.get(FILE1_URI_COPIED));
         Files.deleteIfExists(Paths.get(FILE2_URI_COPIED));
 
