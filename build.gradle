@@ -6,7 +6,7 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 
 group = 'ru.mail.kdog'
-version = '0.0.1'
+version = '0.1'
 sourceCompatibility = '11'
 
 configurations {
